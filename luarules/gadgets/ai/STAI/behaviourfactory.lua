@@ -83,72 +83,76 @@ function BehaviourFactory:defaultBehaviours(unit)
 	end
 	if army.jammers[un] then
 		--self:EchoDebug()
-		table.insert(b, AttackerBST)
+-- 		table.insert(b, AttackerBST)
 		table.insert(b, WardBST)
 	end
 	if army.radars[un] then
 		--self:EchoDebug()
-		table.insert(b, AttackerBST)
+-- 		table.insert(b, AttackerBST)
 		table.insert(b, WardBST)
 	end
 	if army.scouts[un] then
 		--self:EchoDebug()
-		table.insert(b, ScoutBST)
+-- 		table.insert(b, ScoutBST)
 -- 		table.insert(b, WardBST)
+		table.insert(b, DefenderBST)
 	end
 	if army.raiders[un] then
 -- 		table.insert(b, AttackerBST)
-		table.insert(b, RaiderBST)
- 		table.insert(b, ScoutBST)
-		table.insert(b, DefendBST)
+-- 		table.insert(b, RaiderBST)
+--  	table.insert(b, ScoutBST)
+ 		table.insert(b, DefenderBST)
 		--self:EchoDebug()
 	end
 	if army.breaks[un] then
-		table.insert(b, AttackerBST)
-		table.insert(b, DefendBST)
+-- 		table.insert(b, AttackerBST)
+-- 		table.insert(b, DefendBST)
+		table.insert(b, DefenderBST)
 		--self:EchoDebug()
 	end
 	if army.artillerys[un] then
-		table.insert(b, AttackerBST)
+-- 		table.insert(b, AttackerBST)
+		table.insert(b, DefenderBST)
 		--self:EchoDebug()
 	end
 	if army.battles[un] then
-		table.insert(b, AttackerBST)
-		table.insert(b, DefendBST)
+-- 		table.insert(b, AttackerBST)
+-- 		table.insert(b, DefendBST)
+		table.insert(b, DefenderBST)
 		--self:EchoDebug()
 	end
 
 	if army.bomberairs[un] then
 		--self:EchoDebug()
-		table.insert(b, BomberBST)
+-- 		table.insert(b, BomberBST)
 	end
 	if army.airgun[un] then
-		table.insert(b, RaiderBST)
-		table.insert(b, AttackerBST)
+-- 		table.insert(b, RaiderBST)
+-- 		table.insert(b, AttackerBST)
 		--self:EchoDebug()
 	end
 	if army.fighterairs[un] then
-		table.insert(b, DefendBST)
+-- 		table.insert(b, DefendBST)
 		--self:EchoDebug()
 	end
 	if army.paralyzers[un] then
 		--self:EchoDebug()
-		table.insert(b, DefendBST)
+-- 		table.insert(b, DefendBST)
 	end
 
 	if army.antiairs[un] then
 		--self:EchoDebug()
-		table.insert(b, DefendBST)
+-- 		table.insert(b, DefendBST)
 	end
 	if army.subkillers[un] then
-		table.insert(b, AttackerBST)
-		table.insert(b, DefendBST)
+-- 		table.insert(b, AttackerBST)
+-- 		table.insert(b, DefendBST)
 		--self:EchoDebug()
 	end
 	if army.amphibious[un] then
 -- 		table.insert(b, AttackerBST)
-		table.insert(b, RaiderBST)
-		table.insert(b, DefendBST)
+-- 		table.insert(b, RaiderBST)
+-- 		table.insert(b, DefendBST)
 		--self:EchoDebug()
 	end
 	if army.transports[un] then
@@ -161,7 +165,7 @@ function BehaviourFactory:defaultBehaviours(unit)
 		--self:EchoDebug()
 	end
 	if army.spiders[un] then
-		table.insert(b, AttackerBST)
+-- 		table.insert(b, AttackerBST)
 		--self:EchoDebug()
 	end
 	if army.antinukes[un] then

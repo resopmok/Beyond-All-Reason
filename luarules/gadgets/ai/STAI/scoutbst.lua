@@ -48,9 +48,9 @@ function ScoutBST:Update()
 			if self.target ~= nil then
 				local los = self.ai.scouthst:ScoutLos(self, self.target)
 				self:EchoDebug("target los: " .. los)
-				if los == 2 or los == 3 then
-					self.target = nil
-				end
+-- 				if los == 2 or los == 3 then --TEST removed
+-- 					self.target = nil
+-- 				end
 			end
 			-- attack small targets along the way if the scout is armed
 			local attackTarget

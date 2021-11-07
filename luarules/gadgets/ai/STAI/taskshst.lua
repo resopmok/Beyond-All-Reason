@@ -201,79 +201,79 @@ function TasksHST:BuildSiegeIfNeeded(unitName)
 	return self.ai.armyhst.DummyUnitName
 end
 
-function TasksHST:BuildBreakthroughIfNeeded(unitName)
-	if unitName == self.ai.armyhst.DummyUnitName or unitName == nil then return self.ai.armyhst.DummyUnitName end
-	if self:IsSiegeEquipmentNeeded() then return unitName end
-	local mtype = self.ai.armyhst.unitTable[unitName].mtype
-	if mtype == "air" then
-		local bomberCounter = self.ai.bomberhst:GetCounter()
-		if bomberCounter >= self.ai.armyhst.breakthroughBomberCounter and bomberCounter < self.ai.armyhst.maxBomberCounter then
-			return unitName
-		else
-			return self.ai.armyhst.DummyUnitName
-		end
-	else
-		if self.ai.tool:countMyUnit({'battles'}) <= self.ai.armyhst.minBattleCount then return self.ai.armyhst.DummyUnitName end
-		local attackCounter = self.ai.attackhst:GetCounter(mtype)
-		if attackCounter < self.ai.armyhst.maxAttackCounter then
-			return unitName
-		elseif attackCounter >= self.ai.armyhst.breakthroughAttackCounter then
-			return unitName
-		else
-			return self.ai.armyhst.DummyUnitName
-		end
-	end
-end
-
-function TasksHST:BuildRaiderIfNeeded(unitName)
-	self:EchoDebug("build raider if needed: " .. unitName)
-
-	if unitName == self.ai.armyhst.DummyUnitName or unitName == nil then return self.ai.armyhst.DummyUnitName end
-	self:EchoDebug(unitName,self.ai.armyhst.unitTable[unitName],self.ai.armyhst.unitTable[unitName].mtype)
-	local mtype = self.ai.armyhst.unitTable[unitName].mtype
-	if self.ai.factoriesAtLevel[3] ~= nil and self.ai.factoriesAtLevel[3] ~= {} then
-		-- if we have a level 2 factory, don't build raiders until we have some battle units
-		local attackCounter = self.ai.attackhst:GetCounter(mtype)
-		if self.ai.tool:countMyUnit({'battles'}) + self.ai.breakthroughCount < attackCounter / 2 then
-			return self.ai.armyhst.DummyUnitName
-		end
-	end
-	local counter = self.ai.raidhst:GetCounter(mtype)
-	if counter == self.ai.armyhst.minRaidCounter then return self.ai.armyhst.DummyUnitName end
-	if self.ai.raiderCount[mtype] == nil then
-		-- fine
-	elseif self.ai.raiderCount[mtype] >= counter then
-		unitName = self.ai.armyhst.DummyUnitName
-	end
-	return unitName
-end
-
-function TasksHST:BuildBattleIfNeeded(unitName)
-	if unitName == self.ai.armyhst.DummyUnitName or unitName == nil then return self.ai.armyhst.DummyUnitName end
-	local mtype = self.ai.armyhst.unitTable[unitName].mtype
-	local attackCounter = self.ai.attackhst:GetCounter(mtype)
-	self:EchoDebug(mtype .. " " .. attackCounter .. " " .. self.ai.armyhst.maxAttackCounter)
-	if attackCounter == self.ai.armyhst.maxAttackCounter and self.ai.tool:countMyUnit({'battles'}) > self.ai.armyhst.minBattleCount then return self.ai.armyhst.DummyUnitName end
-	if mtype == "veh" and  self.ai.side == self.ai.armyhst.CORESideName and (self.ai.factoriesAtLevel[1] == nil or self.ai.factoriesAtLevel[1] == {}) then
-		-- core only has a lvl1 vehicle raider, so this prevents getting stuck
-		return unitName
-	end
-	if self.ai.factoriesAtLevel[3] ~= nil and self.ai.factoriesAtLevel[3] ~= {} then
-		-- if we have a level 2 factory, don't wait to build raiders first
-		return unitName
-	end
-	local raidCounter = self.ai.raidhst:GetCounter(mtype)
-	self:EchoDebug(mtype .. " " .. raidCounter .. " " .. self.ai.armyhst.maxRaidCounter)
-	if raidCounter == self.ai.armyhst.minRaidCounter then return unitName end
-	self:EchoDebug(self.ai.raiderCount[mtype])
-	if self.ai.raiderCount[mtype] == nil then
-		return unitName
-	elseif self.ai.raiderCount[mtype] < raidCounter / 2 then
-		return self.ai.armyhst.DummyUnitName
-	else
-		return unitName
-	end
-end
+-- function TasksHST:BuildBreakthroughIfNeeded(unitName)
+-- 	if unitName == self.ai.armyhst.DummyUnitName or unitName == nil then return self.ai.armyhst.DummyUnitName end
+-- 	if self:IsSiegeEquipmentNeeded() then return unitName end
+-- 	local mtype = self.ai.armyhst.unitTable[unitName].mtype
+-- 	if mtype == "air" then
+-- 		local bomberCounter = self.ai.bomberhst:GetCounter()
+-- 		if bomberCounter >= self.ai.armyhst.breakthroughBomberCounter and bomberCounter < self.ai.armyhst.maxBomberCounter then
+-- 			return unitName
+-- 		else
+-- 			return self.ai.armyhst.DummyUnitName
+-- 		end
+-- 	else
+-- 		if self.ai.tool:countMyUnit({'battles'}) <= self.ai.armyhst.minBattleCount then return self.ai.armyhst.DummyUnitName end
+-- 		local attackCounter = self.ai.attackhst:GetCounter(mtype)
+-- 		if attackCounter < self.ai.armyhst.maxAttackCounter then
+-- 			return unitName
+-- 		elseif attackCounter >= self.ai.armyhst.breakthroughAttackCounter then
+-- 			return unitName
+-- 		else
+-- 			return self.ai.armyhst.DummyUnitName
+-- 		end
+-- 	end
+-- end
+--
+-- function TasksHST:BuildRaiderIfNeeded(unitName)
+-- 	self:EchoDebug("build raider if needed: " .. unitName)
+--
+-- 	if unitName == self.ai.armyhst.DummyUnitName or unitName == nil then return self.ai.armyhst.DummyUnitName end
+-- 	self:EchoDebug(unitName,self.ai.armyhst.unitTable[unitName],self.ai.armyhst.unitTable[unitName].mtype)
+-- 	local mtype = self.ai.armyhst.unitTable[unitName].mtype
+-- 	if self.ai.factoriesAtLevel[3] ~= nil and self.ai.factoriesAtLevel[3] ~= {} then
+-- 		-- if we have a level 2 factory, don't build raiders until we have some battle units
+-- 		local attackCounter = self.ai.attackhst:GetCounter(mtype)
+-- 		if self.ai.tool:countMyUnit({'battles'}) + self.ai.breakthroughCount < attackCounter / 2 then
+-- 			return self.ai.armyhst.DummyUnitName
+-- 		end
+-- 	end
+-- 	local counter = self.ai.raidhst:GetCounter(mtype)
+-- 	if counter == self.ai.armyhst.minRaidCounter then return self.ai.armyhst.DummyUnitName end
+-- 	if self.ai.raiderCount[mtype] == nil then
+-- 		-- fine
+-- 	elseif self.ai.raiderCount[mtype] >= counter then
+-- 		unitName = self.ai.armyhst.DummyUnitName
+-- 	end
+-- 	return unitName
+-- end
+--
+-- function TasksHST:BuildBattleIfNeeded(unitName)
+-- 	if unitName == self.ai.armyhst.DummyUnitName or unitName == nil then return self.ai.armyhst.DummyUnitName end
+-- 	local mtype = self.ai.armyhst.unitTable[unitName].mtype
+-- 	local attackCounter = self.ai.attackhst:GetCounter(mtype)
+-- 	self:EchoDebug(mtype .. " " .. attackCounter .. " " .. self.ai.armyhst.maxAttackCounter)
+-- 	if attackCounter == self.ai.armyhst.maxAttackCounter and self.ai.tool:countMyUnit({'battles'}) > self.ai.armyhst.minBattleCount then return self.ai.armyhst.DummyUnitName end
+-- 	if mtype == "veh" and  self.ai.side == self.ai.armyhst.CORESideName and (self.ai.factoriesAtLevel[1] == nil or self.ai.factoriesAtLevel[1] == {}) then
+-- 		-- core only has a lvl1 vehicle raider, so this prevents getting stuck
+-- 		return unitName
+-- 	end
+-- 	if self.ai.factoriesAtLevel[3] ~= nil and self.ai.factoriesAtLevel[3] ~= {} then
+-- 		-- if we have a level 2 factory, don't wait to build raiders first
+-- 		return unitName
+-- 	end
+-- 	local raidCounter = self.ai.raidhst:GetCounter(mtype)
+-- 	self:EchoDebug(mtype .. " " .. raidCounter .. " " .. self.ai.armyhst.maxRaidCounter)
+-- 	if raidCounter == self.ai.armyhst.minRaidCounter then return unitName end
+-- 	self:EchoDebug(self.ai.raiderCount[mtype])
+-- 	if self.ai.raiderCount[mtype] == nil then
+-- 		return unitName
+-- 	elseif self.ai.raiderCount[mtype] < raidCounter / 2 then
+-- 		return self.ai.armyhst.DummyUnitName
+-- 	else
+-- 		return unitName
+-- 	end
+-- end
 
 -- function TasksHST:CountOwnUnits(tmpUnitName)
 -- 	if tmpUnitName == self.ai.armyhst.DummyUnitName then return 0 end -- don't count no-units

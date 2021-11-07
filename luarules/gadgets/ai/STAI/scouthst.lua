@@ -21,14 +21,12 @@ function ScoutHST:ScoutLos(scoutbst, position)
 	local los
 	if self.ai.maphst:IsUnderWater(position) and self.ai.armyhst.unitTable[scoutbst.name].sonarRadius == 0 then
 		-- treat underwater spots as surface spots if the scout has no sonar, so that it moves on
-		local lt = self.ai.loshst:AllLos(position)
-		if lt[2] then
-			los = 2
-		else
-			los = 0
+		local lt = self.ai.loshst:LosPos(position)
+		if lt == 'inSonar' then
+			los = 'inRadar'--TEST
 		end
 	else
-		los = self.ai.loshst:GroundLos(position)
+		los = self.ai.loshst:LosPos(position)
 	end
 	return los
 end
@@ -83,17 +81,17 @@ function ScoutHST:ClosestSpot(scoutbst)
 		local los
 		if self.ai.maphst:IsUnderWater(p) and self.ai.armyhst.unitTable[scoutbst.name].sonarRadius == 0 then
 			-- treat underwater spots as surface spots if the scout has no sonar, so that it moves on
-			local lt = self.ai.loshst:AllLos(p)
-			if lt[2] then
-				los = 2
-			else
-				los = 0
+			local lt = self.ai.loshst:LosPos(p)
+			if lt == 'inSonar' then
+				los = 'inRadar' --TEST
 			end
 		else
-			los = self.ai.loshst:GroundLos(p)
+			los = self.ai.loshst:LosPos(p)
 		end
-		if los == 2 or los == 3 or not self.ai.targethst:IsSafePosition(p, unit, 1) then
-			table.remove(self.spotsToScout[mtype][network], i)
+-- 		if los == 2 or los == 3 or not self.ai.targethst:IsSafePosition(p, unit, 1) then --if it is los or sonar do not scout there
+-- 			table.remove(self.spotsToScout[mtype][network], i)
+		if los == 'inLos' or los == 'inSonar' or not self.ai.targethst:IsSafePosition(p, unit, 1) then --if it is los or sonar do not scout there--need TEST
+ 			table.remove(self.spotsToScout[mtype][network], i)
 		else
 			local dist = self.ai.tool:Distance(position, p)
 			if dist < bestDistance then

@@ -1,5 +1,6 @@
 shard_include ("armyhst")
 shard_include ("maphst")
+shard_include ("defenderhst")
 shard_include ("buildsitehst")
 shard_include ("unithst")
 shard_include ("labbuildhst")
@@ -26,6 +27,7 @@ return {
 	SleepST,
 	ArmyHST,
 	MapHST,
+	DefenderHST,
 	EcoHST,
 	AttackHST,
 	BomberHST,

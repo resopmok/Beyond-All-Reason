@@ -1,4 +1,5 @@
 shard_include ("taskqueuebst")
+shard_include ("defenderbst")
 shard_include ("tasklabbst")
 shard_include ("attackerbst")
 shard_include ("raiderbst")

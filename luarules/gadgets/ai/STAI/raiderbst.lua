@@ -31,7 +31,6 @@ function RaiderBST:Init()
 	elseif self.mtype == 'air' then
 		self.groundAirSubmerged = 'air'
 	end
-	self.hurtsList = self.ai.tool:UnitWeaponLayerList(self.name)
 	self.sightRange = utable.losRadius
 
 	-- for pathfinding
@@ -159,10 +158,9 @@ function RaiderBST:GetImmediateTargetUnit()
 		end
 		local mobTargets = safeCell.targets[self.groundAirSubmerged]
 		if mobTargets then
-			for i = 1, #self.hurtsList do
-				local groundAirSubmerged = self.hurtsList[i]
-				if mobTargets[groundAirSubmerged] then
-					return mobTargets[groundAirSubmerged].unit
+			for i,hit in pairs(self.ai.armyhst.unitTable[self.name].hit) do
+				if mobTargets[hit] then
+					return mobTargets[hit].unit
 				end
 			end
 		end

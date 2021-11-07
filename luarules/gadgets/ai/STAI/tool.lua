@@ -186,23 +186,23 @@ end
 
 function Tool:RectsOverlap(rectA, rectB)
 	return rectA.x1 < rectB.x2 and
-           rectB.x1 < rectA.x2 and
-           rectA.z1 < rectB.z2 and
-           rectB.z1 < rectA.z2
+		rectB.x1 < rectA.x2 and
+		rectA.z1 < rectB.z2 and
+		rectB.z1 < rectA.z2
 end
 
 function Tool:pairsByKeys(t, f)
-  local a = {}
-  for n in pairs(t) do table.insert(a, n) end
-  table.sort(a, f)
-  local i = 0      -- iterator variable
-  local iter = function ()   -- iterator function
-    i = i + 1
-    if a[i] == nil then return nil
-    else return a[i], t[a[i]]
-    end
-  end
-  return iter
+local a = {}
+for n in pairs(t) do table.insert(a, n) end
+table.sort(a, f)
+local i = 0      -- iterator variable
+local iter = function ()   -- iterator function
+	i = i + 1
+	if a[i] == nil then return nil
+	else return a[i], t[a[i]]
+	end
+end
+return iter
 end
 
 
@@ -300,53 +300,32 @@ function Tool:CustomCommand(unit, cmdID, cmdParams)
 	return unit:ExecuteCustomCommand(cmdID, floats)
 end
 
-function Tool:ThreatRange(unitName, groundAirSubmerged)
-	local threatLayers = unitThreatLayers[unitName]
-	if groundAirSubmerged ~= nil and threatLayers ~= nil then
-		local layer = threatLayers[groundAirSubmerged]
-		if layer ~= nil then
-			return layer.threat, layer.range
-		end
-	end
+
+
+function Tool:ThreatRange(unitName,groundAirSubmerged)
 	if self.ai.armyhst.antinukes[unitName] or self.ai.armyhst.nukeList[unitName] or self.ai.armyhst.bigPlasmaList[unitName] or self.ai.armyhst._shield_[unitName] then
 		return 0, 0
 	end
-	local utable = self.ai.armyhst.unitTable[unitName]
-	if groundAirSubmerged == nil then
-		if utable.groundRange > utable.airRange and utable.groundRange > utable.submergedRange then
-			groundAirSubmerged = "ground"
-		elseif utable.airRange > utable.groundRange and utable.airRange > utable.submergedRange then
-			groundAirSubmerged = "air"
-		elseif utable.submergedRange > utable.groundRange and utable.submergedRange > utable.airRange then
-			groundAirSubmerged = "submerged"
+	if not groundAirSubmerged then
+		return utable.metalCost, utable.maxWeaponRange
+	else
+		local range
+		local utable = self.ai.armyhst.unitTable[unitName]
+		if groundAirSubmerged == "ground" then
+			range = utable.groundRange
+		elseif groundAirSubmerged == "air" then
+			range = utable.airRange
+		elseif groundAirSubmerged == "submerged" then
+			range = utable.submergedRange
 		end
-		if groundAirSubmerged == nil then
-			return 0, 0
+		if range > 0 then
+			threat = utable.metalCost
+			return threat, range
+		else
+			return 0 , 0
 		end
 	end
-	if threatLayers ~= nil then
-		local layer = threatLayers[groundAirSubmerged]
-		if layer ~= nil then
-			return layer.threat, layer.range
-		end
-	end
-	local threat = 0
-	local range = 0
-	if groundAirSubmerged == "ground" then
-		range = utable.groundRange
-	elseif groundAirSubmerged == "air" then
-		range = utable.airRange
-	elseif groundAirSubmerged == "submerged" then
-		range = utable.submergedRange
-	end
-	if range > 0 and threat == 0 then
-		threat = utable.metalCost
-	end
-	-- double the threat if it's a building (buildings are more bang for your buck)
-	if threat > 0 and utable.isBuilding then threat = threat + threat end
-	if unitThreatLayers[unitName] == nil then unitThreatLayers[unitName] = {} end
-	unitThreatLayers[unitName][groundAirSubmerged] = { threat = threat, range = range }
-	return threat, range
+
 end
 
 function Tool:UnitThreatRangeLayers(unitName)
@@ -363,54 +342,19 @@ function Tool:UnitThreatRangeLayers(unitName)
 	return threatLayers
 end
 
-function Tool:UnitWeaponLayerList(unitName)
-	local weaponLayers = unitWeaponLayers[unitName]
-	if weaponLayers then return weaponLayers end
-	weaponLayers = {}
-	local ut = self.ai.armyhst.unitTable[unitName]
-	if not ut then
-		return weaponLayers
+function Tool:LayersCheck(unitName,layers,sga)
+	local partial = false
+	local full = true
+	for layer in string.gmatch(layers,'%S') do
+		print(layer)
+		if string.find(sga,layer) then
+			partial = true
+		else
+			full = false
+		end
 	end
-	if ut.groundRange > 0 then
-		table.insert(weaponLayers, "ground")
-	end
-	if ut.airRange > 0 then
-		table.insert(weaponLayers, "air")
-	end
-	if ut.submergedRange > 0 then
-		table.insert(weaponLayers, "submerged")
-	end
-	unitWeaponLayers[unitName] = weaponLayers
-	return weaponLayers
 end
 
-function Tool:UnitWeaponMtypeList(unitName)
-	if unitName == nil then return {} end
-	if unitName == self.ai.armyhst.DummyUnitName then return {} end
-	local mtypes = unitWeaponMtypes[unitName]
-	if mtypes then
-		return mtypes
-	end
-	local utable = self.ai.armyhst.unitTable[unitName]
-	mtypes = {}
-	if utable.groundRange > 0 then
-		table.insert(mtypes, "veh")
-		table.insert(mtypes, "bot")
-		table.insert(mtypes, "amp")
-		table.insert(mtypes, "hov")
-		table.insert(mtypes, "shp")
-	end
-	if utable.airRange > 0 then
-		table.insert(mtypes, "air")
-	end
-	if utable.submergedRange > 0 then
-		table.insert(mtypes, "sub")
-		table.insert(mtypes, "shp")
-		table.insert(mtypes, "amp")
-	end
-	unitWeaponMtypes[unitName] = mtypes
-	return mtypes
-end
 
 function Tool:WhatHurtsUnit(unitName, mtype, position)
 	local hurts = whatHurtsMtype[mtype] or whatHurtsUnit[unitName]
@@ -453,6 +397,180 @@ function Tool:BehaviourPosition(behaviour)
 	return unit:GetPosition()
 end
 
+function Tool:SimplifyPath(path)
+	if #path < 3 then
+		return path
+	end
+	local lastAngle
+	local removeIds = {}
+	for i = 1, #path-1 do
+		local node1 = path[i]
+		local node2 = path[i+1]
+		local angle = Tool:AngleAtoB(node1.position.x, node1.position.z, node2.position.x, node2.position.z)
+		if lastAngle then
+			local adist = AngleDist(angle, lastAngle)
+			if adist < 0.2 then
+				removeIds[node1.id] = true
+			end
+		end
+		lastAngle = angle
+	end
+	for i = #path-1, 2, -1 do
+		local node = path[i]
+		if removeIds[node.id] then
+			table.remove(path, i)
+		end
+	end
+	return path
+end
+function Tool:FillCircle(grid, gridElmos, position, radius, sets, adds)
+	local cx = ceil(position.x / gridElmos)
+	local cz = ceil(position.z / gridElmos)
+	radius = max( 0, radius - (gridElmos/2) )
+	local cradius = floor(radius / gridElmos)
+	if cradius > 0 then
+		local err = -cradius
+		local x = cradius
+		local z = 0
+		while x >= z do
+			local lastZ = z
+			err = err + z
+			z = z + 1
+			err = err + z
+			grid = self:Plot4(grid, cx, cz, x, lastZ, sets, adds)
+			if err >= 0 then
+				if x ~= lastZ then grid = self:Plot4(grid, cx, cz, lastZ, x, sets, adds) end
+				err = err - x
+				x = x - 1
+				err = err - x
+			end
+		end
+	end
+return grid
+end
+function Tool:HorizontalLine(grid, x, z, tx, sets, adds)
+	for ix = x, tx do
+		grid[ix] = grid[ix] or {}
+		if type(sets) == 'table' or type(adds) == 'table' then
+			grid[ix][z] = grid[ix][z] or {}
+			local cell = grid[ix][z]
+			if sets then
+				for k, v in pairs(sets) do
+					cell[k] = v
+				end
+			end
+			if adds then
+				for k, v in pairs(adds) do
+					cell[k] = (cell[k] or 0) + v
+				end
+			end
+		else
+			if sets then
+				grid[ix][z] = sets
+			end
+			if adds then
+				grid[ix][z] = (grid[ix][z] or 0) + adds
+				if grid[ix][z] == 0 then grid[ix][z] = nil end
+			end
+		end
+	end
+return grid
+end
+
+function Tool:Plot4(grid, cx, cz, x, z, sets, adds)
+	grid = self:HorizontalLine(grid, cx - x, cz + z, cx + x, sets, adds)
+	if x ~= 0 and z ~= 0 then
+		grid = self:HorizontalLine(grid, cx - x, cz - z, cx + x, sets, adds)
+	end
+	return grid
+end
+-- function Tool:serialize (o, keylist,reset)
+-- 	if reset then output = '' end
+-- 	if keylist == nil then keylist = "" end
+-- 	if type(o) == "number" then
+-- 		output = output .. tostring(o)
+-- 	elseif type(o) == "boolean" then
+-- 		output = output ..  tostring(o)
+-- 	elseif type(o) == "string" then
+-- 		output = output .. string.format("%q", o)
+-- 	elseif type(o) == "userdata" then
+-- 		-- assume it's a position
+-- 		output = output .. "api.Position()"
+-- 		table.insert(savepositions, {keylist = keylist, position = o})
+-- 		--mapdatafile:write("{ x = " .. math.ceil(o.x) .. ", y = " .. math.ceil(o.y) .. ", z = " .. math.ceil(o.z) .. " }")
+-- 	elseif type(o) == "table" then
+-- 		output = output .. ("{\n")
+-- 		for k,v in pairs(o) do
+-- 			output = output .. ("  [")
+-- 			self:serialize(k,keylist)
+-- 			output = output .. ("] = ")
+-- 			local newkeylist
+-- 			if type(v) == "table" or type(v) == "userdata" then
+-- 				if type(k) == "string" then
+-- 				newkeylist = keylist .. "[\""  .. k .. "\"]"
+-- 				elseif type(k) == "number" then
+-- 				newkeylist = keylist .. "["  .. k .. "]"
+-- 				end
+-- 			end
+-- 			self:serialize(v, newkeylist)
+-- 			output = output .. (",\n")
+-- 		end
+-- 		output = output .. ("}\n")
+-- 	else
+-- 		error("cannot self:serialize a " .. type(o))
+-- 	end
+-- 	return output
+-- end
+
+-- function Tool:UnitWeaponLayerList(unitName) --TEST sobstituted in armyhst
+-- 	local weaponLayers = unitWeaponLayers[unitName]
+-- 	if weaponLayers then return weaponLayers end
+-- 	weaponLayers = {}
+-- 	local ut = self.ai.armyhst.unitTable[unitName]
+-- 	if not ut then
+-- 		return weaponLayers
+-- 	end
+-- 	if ut.groundRange > 0 then
+-- 		table.insert(weaponLayers, "ground")
+-- 	end
+-- 	if ut.airRange > 0 then
+-- 		table.insert(weaponLayers, "air")
+-- 	end
+-- 	if ut.submergedRange > 0 then
+-- 		table.insert(weaponLayers, "submerged")
+-- 	end
+-- 	unitWeaponLayers[unitName] = weaponLayers
+-- 	return weaponLayers
+-- end
+
+-- function Tool:UnitWeaponMtypeList(unitName) --TEST do nothing?
+-- 	if unitName == nil then return {} end
+-- 	if unitName == self.ai.armyhst.DummyUnitName then return {} end
+-- 	local mtypes = unitWeaponMtypes[unitName]
+-- 	if mtypes then
+-- 		return mtypes
+-- 	end
+-- 	local utable = self.ai.armyhst.unitTable[unitName]
+-- 	mtypes = {}
+-- 	if utable.groundRange > 0 then
+-- 		table.insert(mtypes, "veh")
+-- 		table.insert(mtypes, "bot")
+-- 		table.insert(mtypes, "amp")
+-- 		table.insert(mtypes, "hov")
+-- 		table.insert(mtypes, "shp")
+-- 	end
+-- 	if utable.airRange > 0 then
+-- 		table.insert(mtypes, "air")
+-- 	end
+-- 	if utable.submergedRange > 0 then
+-- 		table.insert(mtypes, "sub")
+-- 		table.insert(mtypes, "shp")
+-- 		table.insert(mtypes, "amp")
+-- 	end
+-- 	unitWeaponMtypes[unitName] = mtypes
+-- 	return mtypes
+-- end
+--[[
 function Tool:ClosestBuildPos( utype,pos, searchRadius, minDistance, buildFacing, validFunction)
 	self.DebugEnabled = true
 	unitdefID = utype.id
@@ -509,135 +627,7 @@ function Tool:ClosestBuildPos( utype,pos, searchRadius, minDistance, buildFacing
 	self.DebugEnabled = false
 	return position
 end
+]]
 
 
 
-
-
-function Tool:HorizontalLine(grid, x, z, tx, sets, adds)
-	for ix = x, tx do
-		grid[ix] = grid[ix] or {}
-		if type(sets) == 'table' or type(adds) == 'table' then
-			grid[ix][z] = grid[ix][z] or {}
-			local cell = grid[ix][z]
-			if sets then
-				for k, v in pairs(sets) do
-					cell[k] = v
-				end
-			end
-			if adds then
-				for k, v in pairs(adds) do
-					cell[k] = (cell[k] or 0) + v
-				end
-			end
-		else
-			if sets then
-				grid[ix][z] = sets
-			end
-			if adds then
-				grid[ix][z] = (grid[ix][z] or 0) + adds
-				if grid[ix][z] == 0 then grid[ix][z] = nil end
-			end
-		end
-	end
-	return grid
-end
-
-function Tool:Plot4(grid, cx, cz, x, z, sets, adds)
-	grid = self:HorizontalLine(grid, cx - x, cz + z, cx + x, sets, adds)
-	if x ~= 0 and z ~= 0 then
-        grid = self:HorizontalLine(grid, cx - x, cz - z, cx + x, sets, adds)
-    end
-    return grid
-end
-
-function Tool:FillCircle(grid, gridElmos, position, radius, sets, adds)
-	local cx = ceil(position.x / gridElmos)
-	local cz = ceil(position.z / gridElmos)
-	radius = max( 0, radius - (gridElmos/2) )
-	local cradius = floor(radius / gridElmos)
-	if cradius > 0 then
-		local err = -cradius
-		local x = cradius
-		local z = 0
-		while x >= z do
-	        local lastZ = z
-	        err = err + z
-	        z = z + 1
-	        err = err + z
-	        grid = self:Plot4(grid, cx, cz, x, lastZ, sets, adds)
-	        if err >= 0 then
-	            if x ~= lastZ then grid = self:Plot4(grid, cx, cz, lastZ, x, sets, adds) end
-	            err = err - x
-	            x = x - 1
-	            err = err - x
-	        end
-	    end
-	end
-	return grid
-end
-
-function Tool:SimplifyPath(path)
-	if #path < 3 then
-		return path
-	end
-	local lastAngle
-	local removeIds = {}
-	for i = 1, #path-1 do
-		local node1 = path[i]
-		local node2 = path[i+1]
-		local angle = Tool:AngleAtoB(node1.position.x, node1.position.z, node2.position.x, node2.position.z)
-		if lastAngle then
-			local adist = AngleDist(angle, lastAngle)
-			if adist < 0.2 then
-				removeIds[node1.id] = true
-			end
-		end
-		lastAngle = angle
-	end
-	for i = #path-1, 2, -1 do
-		local node = path[i]
-		if removeIds[node.id] then
-			table.remove(path, i)
-		end
-	end
-	return path
-end
-
-function Tool:serialize (o, keylist,reset)
-	if reset then output = '' end
-	if keylist == nil then keylist = "" end
-	if type(o) == "number" then
-		output = output .. tostring(o)
-	elseif type(o) == "boolean" then
-		output = output ..  tostring(o)
-	elseif type(o) == "string" then
-		output = output .. string.format("%q", o)
-	elseif type(o) == "userdata" then
-		-- assume it's a position
-		output = output .. "api.Position()"
-		table.insert(savepositions, {keylist = keylist, position = o})
-		--mapdatafile:write("{ x = " .. math.ceil(o.x) .. ", y = " .. math.ceil(o.y) .. ", z = " .. math.ceil(o.z) .. " }")
-	elseif type(o) == "table" then
-		output = output .. ("{\n")
-		for k,v in pairs(o) do
-			output = output .. ("  [")
-			self:serialize(k,keylist)
-			output = output .. ("] = ")
-			local newkeylist
-			if type(v) == "table" or type(v) == "userdata" then
-				if type(k) == "string" then
-				newkeylist = keylist .. "[\""  .. k .. "\"]"
-				elseif type(k) == "number" then
-				newkeylist = keylist .. "["  .. k .. "]"
-				end
-			end
-			self:serialize(v, newkeylist)
-			output = output .. (",\n")
-		end
-		output = output .. ("}\n")
-	else
-		error("cannot self:serialize a " .. type(o))
-	end
-	return output
-end
